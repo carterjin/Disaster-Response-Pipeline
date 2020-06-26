@@ -1,16 +1,55 @@
 import sys
+import nltk
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+# import libraries
+from sqlalchemy import create_engine
+import pandas as pd
+import re
+
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+
+from sklearn.pipeline import Pipeline
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, make_scorer
 
 
 def load_data(database_filepath):
-    pass
+    engine = create_engine('sqlite:///' + database_filepath)
+    df = pd.read_sql_table('Message',engine)
+    X = df.message
+    Y = df.drop(['id','message','original','genre'],axis = 1)
 
 
 def tokenize(text):
-    pass
+    # convert text to lower case and remove punctuation
+    text = re.sub('[^0-9a-zA-Z]', ' ', text.lower())
+    
+    # tokenize words
+    tokens = word_tokenize(text)
+    
+    # remove stopwords and lemmatize
+    lemmatizer = WordNetLemmatizer()
+    clean_tokens = []
+    for tok in tokens:
+        if tok not in stopwords.words('english'):
+            clean_tokens.append(lemmatizer.lemmatize(tok))
+    return clean_tokens
 
 
 def build_model():
-    pass
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer = tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+    ])
+    return pipeline
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
