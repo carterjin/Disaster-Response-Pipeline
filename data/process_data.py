@@ -32,12 +32,16 @@ def clean_data(df):
     
     # drop duplicates
     df.drop_duplicates(inplace = True)
+    # a few 'related' are 2, change them to 1
+    df.loc[df.related > 1, 'related'] = 1
+    # There are no child alone category, dropping it
+    df.drop(labels = ['child_alone'], axis = 1, inplace = True)
     return df
 
 
 def save_data(df, database_filename):
     engine = create_engine('sqlite:///' + database_filename)
-    df.to_sql('Table', engine, index=False)
+    df.to_sql('Message', engine, index=True)
 
 
 def main():
