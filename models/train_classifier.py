@@ -16,9 +16,7 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import LinearSVC
-from sklearn.multiclass import OneVsRestClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report
 
@@ -83,21 +81,14 @@ def main():
         model = build_model()
         
         print('Training model...')
-        #model.fit(X_train, Y_train)
-        with open(model_filepath, 'rb') as file:
-            model = pickle.load(file)
+        model.fit(X_train, Y_train)
             
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
         print('Trained model saved!')
         
         print('Evaluating model...')
-        #evaluate_model(model, X_test, Y_test, category_names)
-        
-        message = 'I am thirsty and I need water'
-        l_result = list(zip(category_names,list(model.predict([message])[0])))
-        result = [x[0] for x in l_result if x[1] == 1]
-        print(result)
+        evaluate_model(model, X_test, Y_test, category_names)
 
 
 
