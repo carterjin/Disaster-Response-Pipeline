@@ -18,7 +18,7 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, f1_score, make_scorer
 
 import pickle
 
@@ -58,7 +58,15 @@ def build_model():
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(LinearSVC()))
     ])
-    return pipeline
+    parameters = {
+    'vect__ngram_range':[(1,1),(1,2)],
+    'tfidf__norm': ['l1','l2'],
+    'clf__estimator__loss':['squared_hinge','hinge']
+    }
+    # using the average f1 score for all categories for gridsearch score
+    scorer = make_scorer(average_f1)
+    cv = GridSearchCV(pipeline, param_grid = parameters, scoring = scorer, verbose = 3)
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -71,6 +79,20 @@ def evaluate_model(model, X_test, Y_test, category_names):
         report = classification_report(np.array(Y_test)[:, i], Y_pred[:, i])
         metrics.append(report)
         print(category_names[i], '\n', metrics[i])
+        
+def average_f1(Y_test, Y_pred):
+    '''
+    returns the average f1 scores of all categories, 
+    categories where no positive is predicted will have a 0 score.
+    '''
+    metrics = []
+    for i in range(Y_test.shape[1]):
+        if np.sum(Y_pred[:,i]) == 0:
+            report = 0
+        else:
+            report = f1_score(np.array(Y_test)[:, i], Y_pred[:, i])
+        metrics.append(report)
+    return np.mean(metrics)
 
 
 def save_model(model, model_filepath):

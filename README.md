@@ -28,3 +28,6 @@ This project is to analyze disaster data from Figure Eight to build a model for 
     `python run.py`
 
 3. Go to http://0.0.0.0:3001/
+
+## Github repo:
+[https://github.com/carterjin/Disaster-Response-Pipeline](https://github.com/carterjin/Disaster-Response-Pipeline)

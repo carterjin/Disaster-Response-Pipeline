@@ -41,7 +41,7 @@ def clean_data(df):
 
 def save_data(df, database_filename):
     engine = create_engine('sqlite:///' + database_filename)
-    df.to_sql('Message', engine, index=True)
+    df.to_sql('Message', engine, index=True, if_exists = 'replace')
 
 
 def main():
