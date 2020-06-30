@@ -23,6 +23,11 @@ from sklearn.metrics import classification_report
 import pickle
 
 def load_data(database_filepath):
+    '''
+    X: message strings
+    Y: message categories, binary representation, multi categories possible.
+    category_names: the names of categories, a list of strings.
+    '''
     engine = create_engine('sqlite:///' + database_filepath)
     df = pd.read_sql_table('Message',engine)
     X = df.message
@@ -57,6 +62,9 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    '''
+    Prints the precision recall f1-score and support of each categories.
+    '''
     Y_pred = model.predict(X_test)
     metrics = []
     for i in range(len(category_names)):
