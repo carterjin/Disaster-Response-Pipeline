@@ -53,7 +53,7 @@ def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer = tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(OneVsRestClassifier(LinearSVC())))
+        ('clf', MultiOutputClassifier(LinearSVC()))
     ])
     return pipeline
 
@@ -83,16 +83,21 @@ def main():
         model = build_model()
         
         print('Training model...')
-        model.fit(X_train, Y_train)
-        #with open(model_filepath, 'rb') as file:
-            #model = pickle.load(file)
+        #model.fit(X_train, Y_train)
+        with open(model_filepath, 'rb') as file:
+            model = pickle.load(file)
             
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
         print('Trained model saved!')
         
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        #evaluate_model(model, X_test, Y_test, category_names)
+        
+        message = 'I am thirsty and I need water'
+        l_result = list(zip(category_names,list(model.predict([message])[0])))
+        result = [x[0] for x in l_result if x[1] == 1]
+        print(result)
 
 
 

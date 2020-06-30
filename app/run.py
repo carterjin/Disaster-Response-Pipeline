@@ -1,28 +1,35 @@
 import json
 import plotly
 import pandas as pd
+import pickle
+import re
 
-from nltk.stem import WordNetLemmatizer
+from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+#from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
 
 def tokenize(text):
+    # convert text to lower case and remove punctuation
+    text = re.sub('[^0-9a-zA-Z]', ' ', text.lower())
+    
+    # tokenize words
     tokens = word_tokenize(text)
-    lemmatizer = WordNetLemmatizer()
-
+    
+    # remove stopwords and lemmatize
+    stemmer = PorterStemmer()
     clean_tokens = []
     for tok in tokens:
-        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
-        clean_tokens.append(clean_tok)
-
+        if tok not in stopwords.words('english'):
+            clean_tokens.append(stemmer.stem(tok))
     return clean_tokens
 
 # load data
@@ -30,7 +37,9 @@ engine = create_engine('sqlite:///../data/DisasterResponse.db')
 df = pd.read_sql_table('Message', engine)
 
 # load model
-model = joblib.load("../models/classifier.pkl")
+with open("../models/classifier.pkl", 'rb') as file:
+    model = pickle.load(file)
+#model = joblib.load("../models/classifier.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -102,7 +111,6 @@ def index():
 def go():
     # save user input in query
     query = request.args.get('query', '') 
-
     # use model to predict classification for query
     classification_labels = model.predict([query])[0]
     classification_results = dict(zip(df.columns[5:], classification_labels))
